@@ -19,6 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import javax.validation.Valid;
+
 
 @Slf4j
 @RestController
@@ -31,7 +33,7 @@ public class FilmController {
     }
 
     @PostMapping(value = "/films")
-    public ResponseEntity<Film> create(@RequestBody Film film) {
+    public ResponseEntity<Film> create(@Valid @RequestBody Film film) {
         try {
             validateEntity(film);
         } catch (ValidationException e) {
@@ -46,7 +48,7 @@ public class FilmController {
     }
 
     @PutMapping(value = "/films")
-    public ResponseEntity<Film> fullUpdate(@RequestBody Film film) {
+    public ResponseEntity<Film> fullUpdate(@Valid @RequestBody Film film) {
         try {
             validateEntity(film);
         } catch (ValidationException e) {
@@ -55,7 +57,6 @@ public class FilmController {
         }
         int id;
         if (film.getId() == 0  || films.get(film.getId()) == null) {
-//            id = getProperId();
             return new ResponseEntity<>(film, HttpStatus.NOT_FOUND);
         } else {
             id = film.getId();
@@ -66,19 +67,10 @@ public class FilmController {
     }
 
     private void validateEntity(Film film) {
-        if (film.getName().isBlank()) {
-            throw new ValidationException("Название фильма не может быть пустым");
-        }
-        if (film.getDescription().length() >= 200) {
-            throw new ValidationException("Максимальная длина описания - 200 символов");
-        }
         if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
             throw new ValidationException(
                     "Дата релиза не может быть раньше первого кинопоказа в истории"
             );
-        }
-        if (film.getDuration() <= 0) {
-            throw new ValidationException("Продолжительность фильма должна быть положительной");
         }
     }
 

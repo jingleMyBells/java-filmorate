@@ -19,6 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
+import javax.validation.Valid;
+
 
 @Slf4j
 @RestController
@@ -31,7 +33,7 @@ public class UserController {
     }
 
     @PostMapping(value = "/users")
-    public ResponseEntity<User> create(@RequestBody User user) {
+    public ResponseEntity<User> create(@Valid @RequestBody User user) {
         try {
             validateEntity(user);
         }  catch (ValidationException e) {
@@ -49,7 +51,7 @@ public class UserController {
     }
 
     @PutMapping(value = "/users")
-    public ResponseEntity<User> fullUpdate(@RequestBody User user) {
+    public ResponseEntity<User> fullUpdate(@Valid @RequestBody User user) {
         try {
             validateEntity(user);
         }  catch (ValidationException e) {
@@ -61,7 +63,6 @@ public class UserController {
         }
         int id;
         if (user.getId() == 0 || users.get(user.getId()) == null) {
-//            id = getProperId();
             return new ResponseEntity<>(user, HttpStatus.NOT_FOUND);
         } else {
             id = user.getId();
@@ -73,14 +74,8 @@ public class UserController {
     }
 
     private void validateEntity(User user) {
-        if (user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            throw new ValidationException("Email должен содержать символ @ и не быть пустым");
-        }
-        if (user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            throw new ValidationException("Логин не должен быть пустым и содержать пробелы");
-        }
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            throw new ValidationException("День рождения не может быть в будущем");
+        if (user.getLogin().contains(" ")) {
+            throw new ValidationException("Логин не должен содержать пробелы");
         }
     }
 
