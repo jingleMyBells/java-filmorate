@@ -4,6 +4,8 @@ import java.time.LocalDate;
 
 import lombok.Data;
 import lombok.AllArgsConstructor;
+import ru.yandex.practicum.filmorate.validation.ReleasedAfter1895;
+
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
@@ -11,6 +13,7 @@ import javax.validation.constraints.Size;
 
 @Data
 @AllArgsConstructor
+@ReleasedAfter1895
 public class Film {
     private int id;
     @NotBlank

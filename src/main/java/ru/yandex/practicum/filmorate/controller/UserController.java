@@ -1,10 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,25 +8,28 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import lombok.extern.slf4j.Slf4j;
 import javax.validation.Valid;
 
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.repository.UserStorage;
 
 
 @Slf4j
 @RestController
+@RequestMapping("/users")
 public class UserController {
-    private final Map<Integer, User> users = new HashMap<>();
+    private final UserStorage storage = new UserStorage();
 
-    @GetMapping("/users")
+    @GetMapping
     public List<User> getAll() {
-        return new ArrayList<>(users.values());
+        return storage.getAllUsers();
     }
 
-    @PostMapping(value = "/users")
+    @PostMapping
     public ResponseEntity<User> create(@Valid @RequestBody User user) {
         try {
             validateEntity(user);
@@ -41,14 +40,12 @@ public class UserController {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-        int id = getProperId();
-        user.setId(id);
-        users.put(id, user);
+        storage.createNewUser(user);
         log.info("Пользователь успешно добавлен");
         return new ResponseEntity<>(user, HttpStatus.CREATED);
     }
 
-    @PutMapping(value = "/users")
+    @PutMapping
     public ResponseEntity<User> fullUpdate(@Valid @RequestBody User user) {
         try {
             validateEntity(user);
@@ -59,14 +56,10 @@ public class UserController {
         if (user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-        int id;
-        if (user.getId() == 0 || users.get(user.getId()) == null) {
+        if (user.getId() == 0 || storage.getUserById(user.getId()) == null) {
             return new ResponseEntity<>(user, HttpStatus.NOT_FOUND);
-        } else {
-            id = user.getId();
-            users.remove(id);
         }
-        users.put(id, user);
+        storage.updateUser(user);
         log.info("Пользователь успешно обновлен целиком");
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
@@ -75,12 +68,5 @@ public class UserController {
         if (user.getLogin().contains(" ")) {
             throw new ValidationException("Логин не должен содержать пробелы");
         }
-    }
-
-    private int getProperId() {
-        if (users.isEmpty()) {
-            return 1;
-        }
-        return Collections.max(this.users.keySet()) + 1;
     }
 }
