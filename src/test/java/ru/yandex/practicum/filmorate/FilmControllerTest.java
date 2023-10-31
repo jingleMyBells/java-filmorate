@@ -15,7 +15,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
