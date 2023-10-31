@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +23,12 @@ import ru.yandex.practicum.filmorate.repository.UserStorage;
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    private final UserStorage storage = new UserStorage();
+    private final UserStorage storage;
+
+    @Autowired
+    public UserController(UserStorage storage) {
+        this.storage = storage;
+    }
 
     @GetMapping
     public List<User> getAll() {
@@ -35,14 +41,14 @@ public class UserController {
             validateEntity(user);
         }  catch (ValidationException e) {
             log.warn(e.getMessage());
-            return new ResponseEntity<>(user, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<User>(user, HttpStatus.BAD_REQUEST);
         }
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
         storage.createNewUser(user);
         log.info("Пользователь успешно добавлен");
-        return new ResponseEntity<>(user, HttpStatus.CREATED);
+        return new ResponseEntity<User>(user, HttpStatus.CREATED);
     }
 
     @PutMapping
@@ -51,17 +57,17 @@ public class UserController {
             validateEntity(user);
         }  catch (ValidationException e) {
             log.warn(e.getMessage());
-            return new ResponseEntity<>(user, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<User>(user, HttpStatus.BAD_REQUEST);
         }
         if (user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
         if (user.getId() == 0 || storage.getUserById(user.getId()) == null) {
-            return new ResponseEntity<>(user, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<User>(user, HttpStatus.NOT_FOUND);
         }
         storage.updateUser(user);
         log.info("Пользователь успешно обновлен целиком");
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        return new ResponseEntity<User>(user, HttpStatus.OK);
     }
 
     private void validateEntity(User user) {

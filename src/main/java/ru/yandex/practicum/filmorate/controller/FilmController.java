@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +22,12 @@ import ru.yandex.practicum.filmorate.repository.FilmStorage;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    private final FilmStorage storage = new FilmStorage();
+    private final FilmStorage storage;
+
+    @Autowired
+    public FilmController(FilmStorage storage) {
+        this.storage = storage;
+    }
 
     @GetMapping
     public List<Film> getAll() {
@@ -32,16 +38,16 @@ public class FilmController {
     public ResponseEntity<Film> create(@Valid @RequestBody Film film) {
         storage.createNewFilm(film);
         log.info("Фильм успешно добавлен");
-        return new ResponseEntity<>(film, HttpStatus.CREATED);
+        return new ResponseEntity<Film>(film, HttpStatus.CREATED);
     }
 
     @PutMapping
     public ResponseEntity<Film> fullUpdate(@Valid @RequestBody Film film) {
         if (film.getId() == 0  || storage.getFilmById(film.getId()) == null) {
-            return new ResponseEntity<>(film, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<Film>(film, HttpStatus.NOT_FOUND);
         }
         storage.updateFilm(film);
         log.info("Фильм успешно обновлен полностью");
-        return new ResponseEntity<>(film, HttpStatus.OK);
+        return new ResponseEntity<Film>(film, HttpStatus.OK);
     }
 }
